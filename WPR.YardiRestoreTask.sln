@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{055A6AC4-2339-4EF6-905C-AEE3131E16E3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPR.YardiRestoreTask", "ConsoleApp1\WPR.YardiRestoreTask.csproj", "{055A6AC4-2339-4EF6-905C-AEE3131E16E3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
