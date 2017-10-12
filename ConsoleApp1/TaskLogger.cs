@@ -1,19 +1,33 @@
 ﻿using System;
+using System.IO;
 
 namespace WPR.YardiRestoreTask
 {
-	internal class TaskLogger
+	public static class TaskLogger
 	{
+		private static readonly string LogFile;
+
+		static TaskLogger()
+		{
+			var timestamp = DateTime.Now.ToString("yyyy.MM.dd-hh.mm.ss");
+			LogFile = $"{Constants.CurrentPath}\\{timestamp}.log";
+		}
 		//TODO - keep track of log and add send email API
 
 		internal static void Log(Exception ex)
 		{
-			Console.WriteLine(ex.Message);
+			TaskLogger.Log(ex.Message);
 		}
 
 		internal static void Log(string msg)
 		{
 			Console.WriteLine(msg);
+			LogToFile(msg);
+		}
+
+		private static void LogToFile(string msg)
+		{
+			File.AppendAllLines(LogFile, new string[] { msg });
 		}
 	}
 }

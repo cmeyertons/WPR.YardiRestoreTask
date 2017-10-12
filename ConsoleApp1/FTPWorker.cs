@@ -12,6 +12,8 @@ namespace WPR.YardiRestoreTask
 		private readonly string Username;
 		private readonly string Password;
 		private readonly string MatchWildcard;
+		private readonly bool IsEnabled;
+		private FileInfo DownloadedFileInfo;
 
 		public FTPWorker()
 		{
@@ -19,6 +21,7 @@ namespace WPR.YardiRestoreTask
 			this.Username = AppSettings.FTP.Username;
 			this.Password = AppSettings.FTP.Password; //TBD - should this be encrypted??
 			this.MatchWildcard = AppSettings.FTP.MatchWildcard;
+			this.IsEnabled = AppSettings.FTP.IsEnabled;
 		}
 
 		/// <summary>
@@ -27,6 +30,11 @@ namespace WPR.YardiRestoreTask
 		/// <returns>The file name that was downloaded</returns>
 		public string DownloadLatestBackup()
 		{
+			if (!this.IsEnabled)
+			{
+				return this.GetCurrentBackupFile();
+			}
+
 			var file = this.GetLatestMatchingFile();
 
 			var request = this.CreateRequest($"{this.Host}/{file.FileName}");
@@ -57,11 +65,36 @@ namespace WPR.YardiRestoreTask
 				}
 			}
 
-			var info = new FileInfo(file.FileName);
+			this.DownloadedFileInfo = new FileInfo(file.FileName);
 
 			TaskLogger.Log($"Successfully downloaded {file} to executable directory");
 
-			return info.FullName;
+			return this.DownloadedFileInfo.FullName;
+		}
+
+		private string GetCurrentBackupFile()
+		{
+			var file = Directory.EnumerateFiles(Constants.CurrentPath).FirstOrDefault(x => x.EndsWith(".bak"));
+
+			if (string.IsNullOrEmpty(file))
+			{
+				throw new Exception("Could not find any backup files in current directory");
+			}
+
+			return file;
+		}
+
+		public void Cleanup()
+		{
+			if (!this.IsEnabled)
+			{
+				return;
+			}
+
+			if (this.DownloadedFileInfo != null && File.Exists(this.DownloadedFileInfo.FullName))
+			{
+				File.Delete(this.DownloadedFileInfo.FullName);
+			}
 		}
 
 		private int LogPercentageUpdates(int currentPercentage, decimal currentBytes, decimal fileSizeMB)

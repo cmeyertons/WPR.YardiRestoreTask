@@ -1,0 +1,44 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {},
+  "variables": {
+    "vnetPrefix": "10.0.0.0/16",
+    "vnetSubnet1Name": "Subnet-1",
+    "vnetSubnet1Prefix": "10.0.0.0/24",
+    "vnetSubnet2Name": "Subnet-2",
+    "vnetSubnet2Prefix": "10.0.1.0/24"},
+  "resources": [
+    {
+      "name": "wpr-poc-vnet",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "vnet"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('vnetSubnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('vnetSubnet1Prefix')]"
+            }
+          },
+          {
+            "name": "[variables('vnetSubnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('vnetSubnet2Prefix')]"
+            }
+          }
+        ]
+      }
+    }],
+  "outputs": {}
+}
