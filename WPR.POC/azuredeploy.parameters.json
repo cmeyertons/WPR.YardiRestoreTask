@@ -6,10 +6,19 @@
       "value": "carlmeyertons"
     },
     "dbName": {
-      "value": "wpr-poc-sql"
+      "value": "wpr-poc-std-sql"
     },
     "serverName": {
-      "value": "wpr-poc-sqls"
+      "value": "wpr-poc-std-sqls"
+    },
+    "dbEdition": {
+      "value": "Standard"
+    },
+    "dbServiceObjective": {
+      "value": "S1"
+    },
+    "serverAdminLoginPassword": {
+      "value": "Password1!"
     }
   }
 }

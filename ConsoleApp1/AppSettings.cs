@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 
 namespace WPR.YardiRestoreTask
 {
@@ -31,6 +32,15 @@ namespace WPR.YardiRestoreTask
 				public static string ServiceObjective => ConfigurationManager.AppSettings.Get("Db.Azure.ServiceObjective");
 				public static bool IsEnabled => ConfigurationManager.AppSettings.Get("Db.Azure.IsEnabled")?.ToLower() == "true";
 			}
+		}
+
+		public static class Email
+		{
+			public static string Host => ConfigurationManager.AppSettings.Get("Email.Host");
+			public static int Port => Convert.ToInt32(ConfigurationManager.AppSettings.Get("Email.Port"));
+			public static string Username => ConfigurationManager.AppSettings.Get("Email.Username");
+			public static string Password => ConfigurationManager.AppSettings.Get("Email.Password");
+			public static string Recipients => ConfigurationManager.AppSettings.Get("Email.Recipients");
 		}
 	}
 }

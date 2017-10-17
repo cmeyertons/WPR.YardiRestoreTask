@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace WPR.YardiRestoreTask
 {
@@ -12,14 +13,21 @@ namespace WPR.YardiRestoreTask
 			var timestamp = DateTime.Now.ToString("yyyy.MM.dd-hh.mm.ss");
 			LogFile = $"{Constants.CurrentPath}\\{timestamp}.log";
 		}
-		//TODO - keep track of log and add send email API
-
-		internal static void Log(Exception ex)
+		
+		public static void SendEmail(bool isSuccess)
 		{
-			TaskLogger.Log(ex.Message);
+			string status = isSuccess ? "succeeded" : "FAILED";
+			string subject = $"Yardi restore: {status}";
+			EmailSender sender = new EmailSender();
+			sender.Send(subject, File.ReadAllText(LogFile));
 		}
 
-		internal static void Log(string msg)
+		public static void Log(Exception ex)
+		{
+			TaskLogger.Log(ex.ToFlattenedString());
+		}
+
+		public static void Log(string msg)
 		{
 			Console.WriteLine(msg);
 			LogToFile(msg);
@@ -27,7 +35,24 @@ namespace WPR.YardiRestoreTask
 
 		private static void LogToFile(string msg)
 		{
-			File.AppendAllLines(LogFile, new string[] { msg });
+			var lines = msg.Split('\n');
+			File.AppendAllLines(LogFile, lines);
+		}
+	}
+
+	public static class Extend_Exception
+	{
+		public static string ToFlattenedString(this Exception ex)
+		{
+			var sb = new StringBuilder();
+
+			while (ex != null)
+			{
+				sb.AppendLine(ex.ToString());
+				ex = ex.InnerException;
+			}
+
+			return sb.ToString();
 		}
 	}
 }

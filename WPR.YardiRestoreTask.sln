@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{AE0CEFCD
 		tools\SqlPackage.CommandLine\sqlpackage.exe.config = tools\SqlPackage.CommandLine\sqlpackage.exe.config
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WPR.Tests.Integration", "WPR.Tests.Integration\WPR.Tests.Integration.csproj", "{A8946024-EF8B-431E-9BF7-7673C44AA1E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{43B8BA0F-61C6-40A9-AC09-908266172C47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43B8BA0F-61C6-40A9-AC09-908266172C47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43B8BA0F-61C6-40A9-AC09-908266172C47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8946024-EF8B-431E-9BF7-7673C44AA1E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8946024-EF8B-431E-9BF7-7673C44AA1E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8946024-EF8B-431E-9BF7-7673C44AA1E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8946024-EF8B-431E-9BF7-7673C44AA1E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
