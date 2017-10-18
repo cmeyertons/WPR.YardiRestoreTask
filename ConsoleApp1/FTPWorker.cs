@@ -3,21 +3,24 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using Renci.SshNet;
+using Renci.SshNet.Sftp;
 
 namespace WPR.YardiRestoreTask
 {
-	internal class FTPWorker
+	public class FTPWorker
 	{
 		private readonly string Host;
+		private readonly string Path;
 		private readonly string Username;
 		private readonly string Password;
 		private readonly string MatchWildcard;
 		private readonly bool IsEnabled;
-		private FileInfo DownloadedFileInfo;
 
 		public FTPWorker()
 		{
 			this.Host = AppSettings.FTP.Host;
+			this.Path = AppSettings.FTP.Path;
 			this.Username = AppSettings.FTP.Username;
 			this.Password = AppSettings.FTP.Password; //TBD - should this be encrypted??
 			this.MatchWildcard = AppSettings.FTP.MatchWildcard;
@@ -27,7 +30,7 @@ namespace WPR.YardiRestoreTask
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <returns>The file name that was downloaded</returns>
+		/// <returns>The full file name that was downloaded</returns>
 		public string DownloadLatestBackup()
 		{
 			if (!this.IsEnabled)
@@ -36,45 +39,55 @@ namespace WPR.YardiRestoreTask
 			}
 
 			var file = this.GetLatestMatchingFile();
+			this.DownloadFromFtp(file);
 
-			var request = this.CreateRequest($"{this.Host}/{file.FileName}");
+			return new FileInfo(file.Name).FullName;
+		}
 
-			request.Method = WebRequestMethods.Ftp.DownloadFile;
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sftpFile"></param>
+		/// <returns>Full file name</returns>
+		public string DownloadFromFtp(SftpFile sftpFile)
+		{
+			string localFullFileName = $"{Constants.TempPath}\\{sftpFile.Name}";
 
-			if (File.Exists(file.FileName))
+			if (File.Exists(localFullFileName))
 			{
-				TaskLogger.Log($"Deleting existing {file.FileName}");
-				File.Delete(file.FileName);
+				TaskLogger.Log($"Deleting existing {localFullFileName}");
+				File.Delete(localFullFileName);
 			}
 
-			TaskLogger.Log($"Downloading {request.RequestUri}...");
+			TaskLogger.Log($"Downloading {sftpFile.FullName} to {localFullFileName}...");
 
-			int currentPercentage = 0;
-
-			using (Stream ftpStream = request.GetResponse().GetResponseStream())
-			using (Stream fileStream = File.Create(file.FileName))
+			using (var client = this.GetClient())
 			{
-				byte[] buffer = new byte[10240];
-				int read;
-				decimal total = 0;
-				while ((read = ftpStream.Read(buffer, 0, buffer.Length)) > 0)
+				client.Connect();
+
+				int currentPercentage = 0;
+
+				using (var fs = File.OpenWrite(localFullFileName))
 				{
-					fileStream.Write(buffer, 0, read);
-					total += read;
-					currentPercentage = this.LogPercentageUpdates(currentPercentage, total, file.FileSizeMB);
+					var ar = client.BeginDownloadFile(sftpFile.FullName, fs);
+
+					while (!ar.AsyncWaitHandle.WaitOne(1000))
+					{
+						currentPercentage = this.LogPercentageUpdates(currentPercentage, fs.Length, sftpFile.Length / 1024 / 1024);
+					}
+
+					client.EndDownloadFile(ar);
 				}
 			}
 
-			this.DownloadedFileInfo = new FileInfo(file.FileName);
+			TaskLogger.Log($"Successfully downloaded {sftpFile} to executable directory");
 
-			TaskLogger.Log($"Successfully downloaded {file} to executable directory");
-
-			return this.DownloadedFileInfo.FullName;
+			return localFullFileName;
 		}
 
 		private string GetCurrentBackupFile()
 		{
-			var file = Directory.EnumerateFiles(Constants.CurrentPath).FirstOrDefault(x => x.EndsWith(".bak"));
+			var file = Directory.EnumerateFiles(Constants.TempPath).FirstOrDefault(x => x.EndsWith(".bak"));
 
 			if (string.IsNullOrEmpty(file))
 			{
@@ -84,26 +97,13 @@ namespace WPR.YardiRestoreTask
 			return file;
 		}
 
-		public void Cleanup()
-		{
-			if (!this.IsEnabled)
-			{
-				return;
-			}
-
-			if (this.DownloadedFileInfo != null && File.Exists(this.DownloadedFileInfo.FullName))
-			{
-				File.Delete(this.DownloadedFileInfo.FullName);
-			}
-		}
-
 		private int LogPercentageUpdates(int currentPercentage, decimal currentBytes, decimal fileSizeMB)
 		{
 			decimal currentMB = currentBytes / 1024 / 1024;
 
 			int newPercentage = (int)Math.Floor(currentMB / fileSizeMB * 100);
 
-			if (newPercentage > currentPercentage + 5)
+			if (newPercentage > currentPercentage)
 			{
 				TaskLogger.Log($"Downloaded {newPercentage}%...");
 				return newPercentage;
@@ -114,49 +114,39 @@ namespace WPR.YardiRestoreTask
 			}
 		}
 
-		private FTPDirectoryItem GetLatestMatchingFile()
+		public SftpFile GetLatestMatchingFile()
 		{
 			TaskLogger.Log($"Getting files at {this.Host}");
 
-			FtpWebRequest request = this.CreateRequest(this.Host);  
-			request.Method = WebRequestMethods.Ftp.ListDirectoryDetails;
-
-			FtpWebResponse response = (FtpWebResponse)request.GetResponse();
-
-			string responseBody;
-
-			using (var stream = request.GetResponse().GetResponseStream())
+			using (var client = this.GetClient())
 			{
-				StreamReader reader = new StreamReader(stream);
-				responseBody = reader.ReadToEnd();
+				client.Connect();
+
+				var files = client.ListDirectory(this.Path).ToList();
+
+				TaskLogger.Log($"Found {files.Count} files, finding latest with token {this.MatchWildcard}");
+
+				var tokens = this.MatchWildcard.Split('*');
+
+				var latestFile = files
+					.Where(x => tokens.All(t => x.Name.Contains(t)))
+					.OrderByDescending(x => x.LastWriteTimeUtc)
+					.FirstOrDefault();
+				
+				if (latestFile == null)
+				{
+					throw new Exception($"Could not find file matching {this.MatchWildcard}");
+				}
+
+				return latestFile;
 			}
-
-			var ftpDirectoryResponse = new FTPDirectoryResponse(responseBody);
-
-			TaskLogger.Log($"Found {ftpDirectoryResponse.Items.Count} files, finding latest with token {this.MatchWildcard}");
-
-			var tokens = this.MatchWildcard.Split('*');
-
-			var latestFile = ftpDirectoryResponse.Items
-				.Where(x => tokens.All(t => x.FileName.Contains(t)))
-				.OrderByDescending(x => x.ModifiedDate)
-				.FirstOrDefault();
-
-			if (latestFile == null)
-			{
-				throw new Exception($"Could not find file matching {this.MatchWildcard}");
-			}
-
-			TaskLogger.Log($"Using file {latestFile.FileName}");
-
-			return latestFile;
 		}
 
-		private FtpWebRequest CreateRequest(string path)
+		private SftpClient GetClient()
 		{
-			FtpWebRequest request = (FtpWebRequest)WebRequest.Create(path);
-			request.Credentials = new NetworkCredential(this.Username, this.Password);
-			return request;
+			var connectionInfo = new ConnectionInfo(this.Host, this.Username, new PasswordAuthenticationMethod(this.Username, this.Password));
+			
+			return new SftpClient(connectionInfo);
 		}
 	}
 }

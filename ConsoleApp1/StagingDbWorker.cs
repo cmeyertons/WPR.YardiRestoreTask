@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace WPR.YardiRestoreTask
 {
-	internal class StagingDbWorker
+	public class StagingDbWorker
 	{
 		private const string LitespeedExeName = "SQLLiteSpeed.exe";
 		private const string LitespeedExtractorName = "Extractor.exe";

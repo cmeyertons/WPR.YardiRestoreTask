@@ -1,8 +1,9 @@
 ﻿using System;
+using System.IO;
 
 namespace WPR.YardiRestoreTask
 {
-	internal class AutomationWorker
+	public class AutomationWorker
 	{
 		private readonly FTPWorker FTPWorker;
 		private readonly StagingDbWorker StagingDbWorker;
@@ -16,7 +17,7 @@ namespace WPR.YardiRestoreTask
 			this.AzureSQLSender = new AzureSQLSender();
 		}
 
-		internal void Work()
+		public void Work()
 		{
 			try
 			{
@@ -29,11 +30,15 @@ namespace WPR.YardiRestoreTask
 			catch (Exception ex)
 			{
 				TaskLogger.Log(ex);
+				TaskLogger.SendEmail(false);
+				throw;
 			}
 			finally
 			{
-
+				Directory.Delete(Constants.TempPath);
 			}
+
+			TaskLogger.SendEmail(true);
 		}
 	}
 }

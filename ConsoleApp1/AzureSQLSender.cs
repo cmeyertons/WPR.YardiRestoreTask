@@ -5,7 +5,7 @@ using System.IO;
 
 namespace WPR.YardiRestoreTask
 {
-	internal class AzureSQLSender
+	public class AzureSQLSender
 	{
 		private const string SqlPackageExeName = "SqlPackage.exe";
 		private readonly string SqlPackageExe;
@@ -28,9 +28,6 @@ namespace WPR.YardiRestoreTask
 			{
 				throw new Exception($"Could not find {this.SqlPackageExe}");
 			}
-			
-			//TEMP - TODO remove
-			//this.SqlPackageExe = @"C:\Program Files (x86)\Microsoft SQL Server\140\DAC\bin\SqlPackage.exe";
 
 			this.AzureServer = AppSettings.Db.Azure.Server;
 			this.AzureDb = AppSettings.Db.Azure.Name;
@@ -42,6 +39,7 @@ namespace WPR.YardiRestoreTask
 
 			this.IsEnabled = AppSettings.Db.Azure.IsEnabled;
 
+			//this assumes the azure db is already created.
 			this.TestConnection();
 		}
 
@@ -59,7 +57,7 @@ namespace WPR.YardiRestoreTask
 			}
 		}
 
-		internal void Send(StagingDbInfo stagingDbInfo)
+		public void Send(StagingDbInfo stagingDbInfo)
 		{
 			if (this.IsEnabled)
 			{
@@ -76,7 +74,7 @@ namespace WPR.YardiRestoreTask
 
 		private string CreateBacpacFile(StagingDbInfo stagingDbInfo)
 		{
-			string fileName = $"{Constants.CurrentPath}\\{stagingDbInfo.Name}.bacpac";
+			string fileName = $"{Constants.TempPath}\\{stagingDbInfo.Name}.bacpac";
 
 			ProcessRunner runner = new ProcessRunner(this.SqlPackageExe
 				, $"/Action:Export /ssn:{stagingDbInfo.Server} /sdn:{stagingDbInfo.Name} /tf:{fileName}");

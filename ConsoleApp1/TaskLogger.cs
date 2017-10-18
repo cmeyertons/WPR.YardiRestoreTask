@@ -11,7 +11,7 @@ namespace WPR.YardiRestoreTask
 		static TaskLogger()
 		{
 			var timestamp = DateTime.Now.ToString("yyyy.MM.dd-hh.mm.ss");
-			LogFile = $"{Constants.CurrentPath}\\{timestamp}.log";
+			LogFile = $"{Constants.TempPath}\\{timestamp}.log";
 		}
 		
 		public static void SendEmail(bool isSuccess)

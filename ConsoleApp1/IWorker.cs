@@ -1,6 +1,6 @@
 ﻿namespace WPR.YardiRestoreTask
 {
-	internal interface IWorker
+	public interface IWorker
 	{
 		void Work();
 		void Cleanup();
