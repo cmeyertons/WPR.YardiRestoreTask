@@ -18,5 +18,6 @@ namespace WPR.YardiRestoreTask
 		public static string CurrentPath => AppDomain.CurrentDomain.BaseDirectory;
 		public static string ToolsPath => $"{CurrentPath}Tools";
 		public static string TempPath => $"{CurrentPath}Temp";
+		public static string AzurePath => $"{CurrentPath}Azure";
 	}
 }

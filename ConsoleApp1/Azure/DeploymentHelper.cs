@@ -12,6 +12,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent;
 using System.Threading.Tasks;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Models;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using WPR.YardiRestoreTask;
 
 namespace PortalGenerated
 {
@@ -21,34 +22,39 @@ namespace PortalGenerated
     /// </summary>
     public class DeploymentHelper
     {
-        string subscriptionId = "your-subscription-id";
-        string clientId = "your-service-principal-clientId";
-        string clientSecret = "your-service-principal-client-secret";
-        string resourceGroupName = "temp-sql-rg";
-        string deploymentName = $"YardiRestore{Guid.NewGuid()}";
-        string resourceGroupLocation = "South Central US"; // must be specified for creating a new resource group
-        string pathToTemplateFile = "path-to-template.json-on-disk";
-        string pathToParameterFile = "path-to-parameters.json-on-disk";
+        string subscriptionId = "your-subscription-id"; //TODO
+        string clientId = "your-service-principal-clientId"; //TODO
+        string clientSecret = "your-service-principal-client-secret"; //TODO
+        string resourceGroupName = "temp-sql-rg"; //TODO
+        string resourceGroupLocation = "South Central US"; //TODO // must be specified for creating a new resource group
+        string pathToTemplateFile = "path-to-template.json-on-disk"; //TODO
+        string pathToParameterFile = "path-to-parameters.json-on-disk"; //TODO
         string tenantId = "tenant-id";
 
-        public async void Run()
+		private async Task<ResourceManagementClient> GetClientAsync()
+		{
+			var serviceCreds = await ApplicationTokenProvider.LoginSilentAsync(tenantId, clientId, clientSecret);
+			var client = new ResourceManagementClient(serviceCreds);
+			client.SubscriptionId = subscriptionId;
+			return client;
+		}
+
+		public async Task Deploy()
         {
-            // Try to obtain the service credentials
-            var serviceCreds = await ApplicationTokenProvider.LoginSilentAsync(tenantId, clientId, clientSecret);
+			// Try to obtain the service credentials
+			var resourceManagementClient = await this.GetClientAsync();
 
             // Read the template and parameter file contents
             JObject templateFileContents = GetJsonFileContents(pathToTemplateFile);
             JObject parameterFileContents = GetJsonFileContents(pathToParameterFile);
 
             // Create the resource manager client
-            var resourceManagementClient = new ResourceManagementClient(serviceCreds);
-            resourceManagementClient.SubscriptionId = subscriptionId;
 
             // Create or check that resource group exists
             await EnsureResourceGroupExistsAsync(resourceManagementClient, resourceGroupName, resourceGroupLocation);
 
             // Start a deployment
-            await DeployTemplateAsync(resourceManagementClient, resourceGroupName, deploymentName, templateFileContents, parameterFileContents);
+            await DeployTemplateAsync(resourceManagementClient, resourceGroupName, templateFileContents, parameterFileContents);
         }
 
         /// <summary>
@@ -80,14 +86,14 @@ namespace PortalGenerated
 			var exists = await client.ResourceGroups.CheckExistenceAsync(rgName);
             if (!exists)
             {
-                Console.WriteLine(string.Format("Creating resource group '{0}' in location '{1}'", rgName, resourceGroupLocation));
+                TaskLogger.Log(string.Format("Creating resource group '{0}' in location '{1}'", rgName, resourceGroupLocation));
                 var resourceGroup = new ResourceGroupInner();
                 resourceGroup.Location = resourceGroupLocation;
 				await client.ResourceGroups.CreateOrUpdateAsync(rgName, resourceGroup);
             }
             else
             {
-                Console.WriteLine(string.Format("Using existing resource group '{0}'", rgName));
+                TaskLogger.Log(string.Format("Using existing resource group '{0}'", rgName));
             }
         }
 
@@ -99,9 +105,12 @@ namespace PortalGenerated
         /// <param name="deploymentName">The name of the deployment.</param>
         /// <param name="templateFileContents">The template file contents.</param>
         /// <param name="parameterFileContents">The parameter file contents.</param>
-        private static async Task DeployTemplateAsync(ResourceManagementClient client, string rgName, string deploymentName, JObject templateFileContents, JObject parameterFileContents)
+        private static async Task DeployTemplateAsync(ResourceManagementClient client, string rgName, JObject templateFileContents, JObject parameterFileContents)
         {
-            Console.WriteLine(string.Format("Starting template deployment '{0}' in resource group '{1}'", deploymentName, rgName));
+			string deploymentName = $"WPR.YardiRestoreTask-{Guid.NewGuid()}";
+
+            TaskLogger.Log(string.Format("Starting template deployment '{0}' in resource group '{1}'", deploymentName, rgName));
+
             var deployment = new DeploymentInner(new DeploymentProperties()
 			{
 				Mode = DeploymentMode.Incremental,
@@ -110,7 +119,14 @@ namespace PortalGenerated
 			});
 
 			var deploymentResult = await client.Deployments.CreateOrUpdateAsync(rgName, deploymentName, deployment);
-            Console.WriteLine(string.Format("Deployment status: {0}", deploymentResult.Properties.ProvisioningState));
+            TaskLogger.Log(string.Format("Deployment status: {0}", deploymentResult.Properties.ProvisioningState));
         }
-    }
+
+		public async Task DeleteResourceGroupAsync(string rgName)
+		{
+			var client = await this.GetClientAsync();
+
+			await client.ResourceGroups.DeleteAsync(rgName);
+		}
+	}
 }
