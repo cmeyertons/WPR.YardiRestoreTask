@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachines_temp_sql_vm_name": {
+            "value": null
+        },
+        "networkInterfaces_temp_sql_vm60_name": {
+            "value": null
+        },
+        "publicIPAddresses_temp_sql_vm_ip_name": {
+            "value": null
+        },
+        "networkSecurityGroups_temp_sql_vm_nsg_name": {
+            "value": null
+        },
+        "schedules_shutdown_computevm_temp_sql_vm_name": {
+            "value": null
+        },
+        "securityRules_default_allow_rdp_name": {
+            "value": null
+        },
+        "virtualMachines_temp_sql_vm_id": {
+            "value": null
+        },
+        "virtualMachines_temp_sql_vm_id_1": {
+            "value": null
+        },
+        "virtualMachines_temp_sql_vm_id_2": {
+            "value": null
+        },
+        "virtualMachines_temp_sql_vm_id_3": {
+            "value": null
+        },
+        "networkInterfaces_temp_sql_vm60_id": {
+            "value": null
+        }
+    }
+}

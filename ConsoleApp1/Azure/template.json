@@ -1,0 +1,398 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachines_temp_sql_vm_name": {
+            "defaultValue": "temp-sql-vm",
+            "type": "String"
+        },
+        "networkInterfaces_temp_sql_vm60_name": {
+            "defaultValue": "temp-sql-vm60",
+            "type": "String"
+        },
+        "publicIPAddresses_temp_sql_vm_ip_name": {
+            "defaultValue": "temp-sql-vm-ip",
+            "type": "String"
+        },
+        "networkSecurityGroups_temp_sql_vm_nsg_name": {
+            "defaultValue": "temp-sql-vm-nsg",
+            "type": "String"
+        },
+        "schedules_shutdown_computevm_temp_sql_vm_name": {
+            "defaultValue": "shutdown-computevm-temp-sql-vm",
+            "type": "String"
+        },
+        "securityRules_default_allow_rdp_name": {
+            "defaultValue": "default-allow-rdp",
+            "type": "String"
+        },
+        "virtualMachines_temp_sql_vm_id": {
+            "defaultValue": "/subscriptions/5210dca5-09df-4c6d-95d1-71e23df4fe38/resourceGroups/temp-sql-rg/providers/Microsoft.Compute/disks/temp-sql-vm_OsDisk_1_3d72a1d0e6d547baab1acbed4d93b0cf",
+            "type": "String"
+        },
+        "virtualMachines_temp_sql_vm_id_1": {
+            "defaultValue": "/subscriptions/5210dca5-09df-4c6d-95d1-71e23df4fe38/resourceGroups/temp-sql-rg/providers/Microsoft.Compute/disks/temp-sql-vm_disk2_ce106b03a048458383c1e8275689c4cb",
+            "type": "String"
+        },
+        "virtualMachines_temp_sql_vm_id_2": {
+            "defaultValue": "/subscriptions/5210dca5-09df-4c6d-95d1-71e23df4fe38/resourceGroups/temp-sql-rg/providers/Microsoft.Compute/disks/temp-sql-vm_disk3_ca9a3de2fd894a4181a3f8ba035d424f",
+            "type": "String"
+        },
+        "virtualMachines_temp_sql_vm_id_3": {
+            "defaultValue": "/subscriptions/5210dca5-09df-4c6d-95d1-71e23df4fe38/resourceGroups/temp-sql-rg/providers/Microsoft.Compute/disks/temp-sql-vm_disk4_3682d838012d472e9a472de61df7208b",
+            "type": "String"
+        },
+        "networkInterfaces_temp_sql_vm60_id": {
+            "defaultValue": "/subscriptions/5210dca5-09df-4c6d-95d1-71e23df4fe38/resourceGroups/wpr-poc-vnet/providers/Microsoft.Network/virtualNetworks/wpr-poc-vnet/subnets/Subnet-1",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "comments": "Generalized from resource: '/subscriptions/5210dca5-09df-4c6d-95d1-71e23df4fe38/resourceGroups/temp-sql-rg/providers/Microsoft.Compute/virtualMachines/temp-sql-vm'.",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[parameters('virtualMachines_temp_sql_vm_name')]",
+            "apiVersion": "2017-03-30",
+            "location": "southcentralus",
+            "scale": null,
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS12_v2"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftSQLServer",
+                        "offer": "SQL2016SP1-WS2016",
+                        "sku": "Standard",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(parameters('virtualMachines_temp_sql_vm_name'),'_OsDisk_1_3d72a1d0e6d547baab1acbed4d93b0cf')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS",
+                            "id": "[parameters('virtualMachines_temp_sql_vm_id')]"
+                        },
+                        "diskSizeGB": 127
+                    },
+                    "dataDisks": [
+                        {
+                            "lun": 0,
+                            "name": "[concat(parameters('virtualMachines_temp_sql_vm_name'),'_disk2_ce106b03a048458383c1e8275689c4cb')]",
+                            "createOption": "Empty",
+                            "caching": "ReadOnly",
+                            "managedDisk": {
+                                "storageAccountType": "Premium_LRS",
+                                "id": "[parameters('virtualMachines_temp_sql_vm_id_1')]"
+                            },
+                            "diskSizeGB": 1023
+                        },
+                        {
+                            "lun": 1,
+                            "name": "[concat(parameters('virtualMachines_temp_sql_vm_name'),'_disk3_ca9a3de2fd894a4181a3f8ba035d424f')]",
+                            "createOption": "Empty",
+                            "caching": "ReadOnly",
+                            "managedDisk": {
+                                "storageAccountType": "Premium_LRS",
+                                "id": "[parameters('virtualMachines_temp_sql_vm_id_2')]"
+                            },
+                            "diskSizeGB": 1023
+                        },
+                        {
+                            "lun": 2,
+                            "name": "[concat(parameters('virtualMachines_temp_sql_vm_name'),'_disk4_3682d838012d472e9a472de61df7208b')]",
+                            "createOption": "Empty",
+                            "caching": "ReadOnly",
+                            "managedDisk": {
+                                "storageAccountType": "Premium_LRS",
+                                "id": "[parameters('virtualMachines_temp_sql_vm_id_3')]"
+                            },
+                            "diskSizeGB": 1023
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_temp_sql_vm_name')]",
+                    "adminUsername": "wpradmin",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true
+                    },
+                    "secrets": []
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_temp_sql_vm60_name'))]"
+                        }
+                    ]
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_temp_sql_vm60_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/5210dca5-09df-4c6d-95d1-71e23df4fe38/resourcegroups/temp-sql-rg/providers/microsoft.devtestlab/schedules/shutdown-computevm-temp-sql-vm'.",
+            "type": "microsoft.devtestlab/schedules",
+            "name": "[parameters('schedules_shutdown_computevm_temp_sql_vm_name')]",
+            "apiVersion": "2016-05-15",
+            "location": "southcentralus",
+            "scale": null,
+            "properties": {
+                "status": "Enabled",
+                "taskType": "ComputeVmShutdownTask",
+                "dailyRecurrence": {
+                    "time": "1900"
+                },
+                "timeZoneId": "UTC",
+                "notificationSettings": {
+                    "status": "Disabled",
+                    "timeInMinutes": 30
+                },
+                "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_temp_sql_vm_name'))]",
+                "provisioningState": "Succeeded",
+                "uniqueIdentifier": "c7f86407-cf5a-47a6-b76b-f727d8194c67"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_temp_sql_vm_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/5210dca5-09df-4c6d-95d1-71e23df4fe38/resourceGroups/temp-sql-rg/providers/Microsoft.Network/networkInterfaces/temp-sql-vm60'.",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[parameters('networkInterfaces_temp_sql_vm60_name')]",
+            "apiVersion": "2017-06-01",
+            "location": "southcentralus",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "resourceGuid": "35520bb7-f1f2-409c-8f27-13cce712806a",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "etag": "W/\"a5fc0aad-430e-49fc-89dc-e53c90216352\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "privateIPAddress": "10.0.0.4",
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_temp_sql_vm_ip_name'))]"
+                            },
+                            "subnet": {
+                                "id": "[parameters('networkInterfaces_temp_sql_vm60_id')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": [],
+                    "appliedDnsServers": [],
+                    "internalDomainNameSuffix": "p1fgjlljwkyubcchkuwsvo0ave.jx.internal.cloudapp.net"
+                },
+                "macAddress": "00-0D-3A-70-F3-AD",
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_temp_sql_vm_nsg_name'))]"
+                },
+                "primary": true,
+                "virtualMachine": {
+                    "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_temp_sql_vm_name'))]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_temp_sql_vm_ip_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_temp_sql_vm_nsg_name'))]",
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_temp_sql_vm_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/5210dca5-09df-4c6d-95d1-71e23df4fe38/resourceGroups/temp-sql-rg/providers/Microsoft.Network/networkSecurityGroups/temp-sql-vm-nsg'.",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[parameters('networkSecurityGroups_temp_sql_vm_nsg_name')]",
+            "apiVersion": "2017-06-01",
+            "location": "southcentralus",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "resourceGuid": "9d64cac4-70c3-46e1-840a-e7b3199433ac",
+                "securityRules": [
+                    {
+                        "name": "default-allow-rdp",
+                        "etag": "W/\"9539d4d2-75dd-4b5e-8b11-9830e1771b98\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "3389",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1000,
+                            "direction": "Inbound",
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ],
+                "defaultSecurityRules": [
+                    {
+                        "name": "AllowVnetInBound",
+                        "etag": "W/\"9539d4d2-75dd-4b5e-8b11-9830e1771b98\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Allow inbound traffic from all VMs in VNET",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 65000,
+                            "direction": "Inbound",
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "AllowAzureLoadBalancerInBound",
+                        "etag": "W/\"9539d4d2-75dd-4b5e-8b11-9830e1771b98\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Allow inbound traffic from azure load balancer",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "AzureLoadBalancer",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 65001,
+                            "direction": "Inbound",
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "DenyAllInBound",
+                        "etag": "W/\"9539d4d2-75dd-4b5e-8b11-9830e1771b98\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all inbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 65500,
+                            "direction": "Inbound",
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "AllowVnetOutBound",
+                        "etag": "W/\"9539d4d2-75dd-4b5e-8b11-9830e1771b98\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Allow outbound traffic from all VMs to all VMs in VNET",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "VirtualNetwork",
+                            "access": "Allow",
+                            "priority": 65000,
+                            "direction": "Outbound",
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "AllowInternetOutBound",
+                        "etag": "W/\"9539d4d2-75dd-4b5e-8b11-9830e1771b98\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Allow outbound traffic from all VMs to Internet",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "Internet",
+                            "access": "Allow",
+                            "priority": 65001,
+                            "direction": "Outbound",
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "DenyAllOutBound",
+                        "etag": "W/\"9539d4d2-75dd-4b5e-8b11-9830e1771b98\"",
+                        "properties": {
+                            "provisioningState": "Succeeded",
+                            "description": "Deny all outbound traffic",
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Deny",
+                            "priority": 65500,
+                            "direction": "Outbound",
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/5210dca5-09df-4c6d-95d1-71e23df4fe38/resourceGroups/temp-sql-rg/providers/Microsoft.Network/publicIPAddresses/temp-sql-vm-ip'.",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[parameters('publicIPAddresses_temp_sql_vm_ip_name')]",
+            "apiVersion": "2017-06-01",
+            "location": "southcentralus",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "resourceGuid": "e4a6bdb6-29ce-470d-932d-438bd8eef467",
+                "ipAddress": "52.171.132.209",
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Dynamic",
+                "idleTimeoutInMinutes": 4
+            },
+            "dependsOn": []
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/5210dca5-09df-4c6d-95d1-71e23df4fe38/resourceGroups/temp-sql-rg/providers/Microsoft.Network/networkSecurityGroups/temp-sql-vm-nsg/securityRules/default-allow-rdp'.",
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "name": "[concat(parameters('networkSecurityGroups_temp_sql_vm_nsg_name'), '/', parameters('securityRules_default_allow_rdp_name'))]",
+            "apiVersion": "2017-06-01",
+            "scale": null,
+            "properties": {
+                "provisioningState": "Succeeded",
+                "protocol": "TCP",
+                "sourcePortRange": "*",
+                "destinationPortRange": "3389",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 1000,
+                "direction": "Inbound",
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_temp_sql_vm_nsg_name'))]"
+            ]
+        }
+    ]
+}
