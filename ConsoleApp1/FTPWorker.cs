@@ -116,7 +116,7 @@ namespace WPR.YardiRestoreTask
 
 		public SftpFile GetLatestMatchingFile()
 		{
-			TaskLogger.Log($"Getting files at {this.Host}");
+			TaskLogger.Log($"Getting files at {this.Host}{this.Path}");
 
 			using (var client = this.GetClient())
 			{
